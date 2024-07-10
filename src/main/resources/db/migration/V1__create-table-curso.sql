@@ -1,7 +1,7 @@
 CREATE TABLE curso (
     id BIGINT NOT NULL AUTO_INCREMENT,
     nombre VARCHAR(100) NOT NULL,
-    catogira VARCHAR(100) NOT NULL,
+    categoria VARCHAR(100) NOT NULL,
     status TINYINT,
 
     PRIMARY KEY(id)
