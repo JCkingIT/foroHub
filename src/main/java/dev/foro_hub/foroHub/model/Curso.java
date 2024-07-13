@@ -1,7 +1,7 @@
 package dev.foro_hub.foroHub.model;
 
-import dev.foro_hub.foroHub.utilities.curso.ActualizarCurso;
-import dev.foro_hub.foroHub.utilities.curso.RegistrarCurso;
+import dev.foro_hub.foroHub.services.curso.ActualizarCurso;
+import dev.foro_hub.foroHub.services.curso.RegistrarCurso;
 import jakarta.persistence.*;
 import lombok.*;
 

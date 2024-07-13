@@ -1,4 +1,4 @@
-package dev.foro_hub.foroHub.utilities.curso;
+package dev.foro_hub.foroHub.services.curso;
 
 import jakarta.validation.constraints.NotNull;
 

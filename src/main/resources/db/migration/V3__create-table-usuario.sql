@@ -4,8 +4,8 @@ CREATE TABLE usuario (
     email VARCHAR(100) NOT NULL,
     clave VARCHAR(100) NOT NULL,
     status TINYINT,
-    perfilId BIGINT NOT NULL,
+    perfil_id BIGINT NOT NULL,
 
     PRIMARY KEY(id),
-    CONSTRAINT `fk_usuario_perfil` FOREIGN KEY (`perfilId`) REFERENCES `perfil` (`id`) ON UPDATE NO ACTION ON DELETE NO ACTION
+    CONSTRAINT `fk_usuario_perfil` FOREIGN KEY (`perfil_id`) REFERENCES `perfil` (`id`) ON UPDATE NO ACTION ON DELETE NO ACTION
 )
