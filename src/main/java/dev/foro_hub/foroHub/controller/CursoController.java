@@ -1,5 +1,6 @@
 package dev.foro_hub.foroHub.controller;
 
+import dev.foro_hub.foroHub.infra.error.Answer;
 import dev.foro_hub.foroHub.model.Curso;
 import dev.foro_hub.foroHub.services.curso.*;
 import jakarta.transaction.Transactional;
@@ -48,16 +49,18 @@ public class CursoController {
                 return ResponseEntity.ok(new RespuestaCurso(curso.getId(), curso.getNombre(), curso.getCategoria()));
             }
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No existe el curso solicitado o fue borrado");
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Answer(false, 404,HttpStatus.NOT_FOUND,"El curso que deseas editar no existe"));
 
     }
 
     @DeleteMapping("/{id}")
     @Transactional
-    public ResponseEntity<RespuestaCurso> deletEliminar(@PathVariable Long id){
-        Curso curso = repository.getReferenceById(id);
+    public ResponseEntity deletEliminar(@PathVariable Long id){
+        Curso curso = repository.findById(id).orElse(null);
+        if(curso == null && !curso.getStatus()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Answer(false, 404,HttpStatus.NOT_FOUND,"El curso que deseas eliminar no existe"));
+        curso = repository.getReferenceById(id);
         curso.eliminar();
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().body(new Answer(true, 200, HttpStatus.OK,"Curso eliminado"));
     }
 
     @GetMapping("/{id}")
@@ -71,6 +74,6 @@ public class CursoController {
             }
         }
 
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No existe el curso solicitado o fue borrado");
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Answer(false, 404,HttpStatus.NOT_FOUND,"El curso solicitado no existe"));
     }
 }

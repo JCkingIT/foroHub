@@ -1,7 +1,8 @@
-CREATE TABLE perfil (
+CREATE TABLE usuario (
     id BIGINT NOT NULL AUTO_INCREMENT,
     nombre VARCHAR(100) NOT NULL,
-    status TINYINT,
+    email VARCHAR(100) NOT NULL,
+    clave VARCHAR(100) NOT NULL,
 
     PRIMARY KEY(id)
 )

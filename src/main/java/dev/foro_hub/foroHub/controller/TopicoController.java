@@ -1,5 +1,6 @@
 package dev.foro_hub.foroHub.controller;
 
+import dev.foro_hub.foroHub.infra.error.Answer;
 import dev.foro_hub.foroHub.model.Curso;
 import dev.foro_hub.foroHub.model.Topico;
 import dev.foro_hub.foroHub.model.Usuario;
@@ -34,14 +35,21 @@ public class TopicoController {
     private IRespuestaRepository respuestaRepository;
 
     @GetMapping
-    public ResponseEntity<Page<ListadoTopico>> getLista(@PageableDefault(size = 10) Pageable paginacion){
+    public ResponseEntity<Page<ListadoTopico>> all(@PageableDefault(size = 10) Pageable paginacion){
         return ResponseEntity.ok(topicoRepository.findByStatusTrue(paginacion).map(ListadoTopico::new));
     }
 
     @PostMapping
-    public ResponseEntity<RespuestaTopico> postRegistrar(@RequestBody @Valid RegistrarTopico registrarTopico, UriComponentsBuilder uriComponentsBuilder){
+    public ResponseEntity add(@RequestBody @Valid RegistrarTopico registrarTopico, UriComponentsBuilder uriComponentsBuilder){
+        if(topicoRepository.existsByTitulo(registrarTopico.titulo()) || topicoRepository.existsByMensaje(registrarTopico.mensaje())){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Answer(false, 404, HttpStatus.NOT_FOUND,"Ya existe el topico con el titulo y/o mensaje ingresado"));
+        }
+
         Usuario usuario = usuarioRepository.findById(registrarTopico.idUsuario()).orElse(null);
+        if(usuario == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Answer(false,404, HttpStatus.NOT_FOUND,"El usuario ingresado no existe"));
         Curso curso = cursoRepository.findById(registrarTopico.idCurso()).orElse(null);
+        if(curso == null || !curso.getStatus()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Answer(false,404, HttpStatus.NOT_FOUND,"El curso ingresado no existe"));
+
         Topico topico = topicoRepository.save(new Topico(registrarTopico, usuario, curso));
         RespuestaTopico respuestaTopico = new RespuestaTopico(topico);
 
@@ -51,7 +59,11 @@ public class TopicoController {
 
     @PutMapping
     @Transactional
-    public ResponseEntity putActualizar(@RequestBody @Valid ActualizarTopico actualizarTopico){
+    public ResponseEntity update(@RequestBody @Valid ActualizarTopico actualizarTopico){
+        if(topicoRepository.existsByTitulo(actualizarTopico.titulo()) || topicoRepository.existsByMensaje(actualizarTopico.mensaje())){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Answer(false, 404, HttpStatus.NOT_FOUND,"Ya existe el topico con el titulo y/o mensaje ingresado"));
+        }
+
         Topico topico;
         if(topicoRepository.existsById(actualizarTopico.id())){
             topico = topicoRepository.getById(actualizarTopico.id());
@@ -61,20 +73,22 @@ public class TopicoController {
                 return ResponseEntity.ok(new RespuestaTopico(topico));
             }
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No existe el topico solicitado o fue borrado");
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Answer(false,404,HttpStatus.NOT_FOUND,"El topico que deseas editar no existe"));
 
     }
 
     @DeleteMapping("/{id}")
     @Transactional
-    public ResponseEntity<RespuestaTopico> deletEliminar(@PathVariable Long id){
-        Topico topico = topicoRepository.getReferenceById(id);
+    public ResponseEntity delete(@PathVariable Long id){
+        Topico topico = topicoRepository.findById(id).orElse(null);
+        if(topico == null || !topico.getStatus()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Answer(false,404, HttpStatus.NOT_FOUND,"El topico ingresado no existe"));
+        topico = topicoRepository.getReferenceById(id);
         topico.eliminar();
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.status(HttpStatus.OK).body(new Answer(true,200, HttpStatus.OK,"Topico eliminado"));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity getCurso(@PathVariable Long id){
+    public ResponseEntity search(@PathVariable Long id){
 
         Topico topico;
 
@@ -86,6 +100,6 @@ public class TopicoController {
             }
         }
 
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No existe el topico solicitado o fue borrado");
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Answer(false,404, HttpStatus.NOT_FOUND,"El topico que deseas ver no existe"));
     }
 }
